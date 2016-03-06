@@ -24,5 +24,4 @@ def readData(dataFile):
 
 if __name__ == "__main__":
       data = readData("perfume_data.csv")
-      print data
       tools.computeParameters(data, [0,1])

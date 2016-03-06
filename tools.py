@@ -24,6 +24,7 @@ def computeParameters(data, classList):
       dataRows, dataCols = data.shape
       zeroParams = []
       i = 0;
+      # Initializa all nd arrays to zeros
       for i in range(dataCols-1):
             zeroParams.append(0)
       for _class in classList:
@@ -31,7 +32,8 @@ def computeParameters(data, classList):
             classCount.append(0)
       classMeans = np.asarray(classMeans).astype(int)
       classCount = np.asarray(classCount).astype(int)
-
+      
+      # Calculate mean
       for rowIndex in range(dataRows):
             _class = data[rowIndex, -1]
             record = data[rowIndex, 0:-1]
@@ -42,4 +44,21 @@ def computeParameters(data, classList):
       for _class in classList:
             classMeans[_class,:] = \
                         [x/classCount[_class] for x in classMeans[_class,:]]
-      print classMeans
+      
+      # Allocate a 3d nd array for sigma matrices
+      sigma = np.zeros((dataCols-1, dataCols-1))
+      sigmaSet = []
+      for _class in classList:
+            sigmaSet.append(sigma)
+
+      # Re-itrate the data set to evaluate sigma matrices for each class
+      for rowIndex in range(dataRows):
+            _class = data[rowIndex, -1]
+            record = data[rowIndex, 0:-1]
+            var = record - classMeans[_class,:]
+            var = np.outer(var, var)
+            sigmaSet[_class,:,:] += var
+      print "Class 0\n%s" % sigmaSet[0,:,:]
+      print "Class 1\n%s" % sigmaSet[1,:,:]
+
+            
