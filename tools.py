@@ -1,4 +1,6 @@
+from __future__ import division
 import numpy as np
+import math
 
 '''
 Compute the confusion matrix for a general class of classification
@@ -6,10 +8,31 @@ Hope you appreciate the pun ;)
 //ToDO
 '''
 
-def createConfusion():
-      print "Confusion implementation pending"
-      #Implementation pending
-
+def createConfusion(y_hat, y, classSet):
+      confusion = np.zeros((len(classSet), len(classSet)))
+      for i in range(len(y_hat)):
+            confusion[y_hat[i],y[i]] += 1
+      precision = np.zeros(len(classSet))
+      recall = np.zeros(len(classSet))
+      f_measure = np.zeros(len(classSet))
+      for _class in classSet:
+            precision[_class] = \
+                        confusion[_class, _class] / \
+                        np.sum(confusion, axis=1, dtype='float')[_class]
+            if math.isnan(precision[_class]):
+                  precision[_class] = 0
+            recall[_class] = \
+                        confusion[_class, _class] / \
+                        np.sum(confusion, axis=0, dtype='float')[_class]
+            if math.isnan(recall[_class]):
+                  recall[_class] = 0
+            f_measure[_class] = 2*(precision[_class] * recall[_class])/\
+                        (precision[_class] + recall[_class])
+            if math.isnan(f_measure[_class]):
+                  f_measure[_class] = 0
+      accuracy = np.trace(confusion)/np.sum(confusion)
+      return precision, recall, f_measure, accuracy
+            
 '''
 Compute parameter values for each feature for all classes
 Class labels must be numeric starting from 0 and must be the last label in data
@@ -41,6 +64,7 @@ def computeParameters(data, classList):
             i = 0;
             for i in range(dataCols-1):
                   classMeans[_class,i] += record[i]
+      _class = 0
       for _class in classList:
             classMeans[_class,:] = \
                         [x/classCount[_class] for x in classMeans[_class,:]]
@@ -48,8 +72,10 @@ def computeParameters(data, classList):
       # Allocate a 3d nd array for sigma matrices
       sigma = np.zeros((dataCols-1, dataCols-1))
       sigmaSet = []
+      _class = 0
       for _class in classList:
             sigmaSet.append(sigma)
+      sigmaSet = np.asarray(sigmaSet)
 
       # Re-itrate the data set to evaluate sigma matrices for each class
       for rowIndex in range(dataRows):
@@ -58,7 +84,9 @@ def computeParameters(data, classList):
             var = record - classMeans[_class,:]
             var = np.outer(var, var)
             sigmaSet[_class,:,:] += var
-      print "Class 0\n%s" % sigmaSet[0,:,:]
-      print "Class 1\n%s" % sigmaSet[1,:,:]
+      _class = 0
+      for _class in classList:
+            sigmaSet[_class,:,:] /= classCount[_class]
+      return sigmaSet, classMeans, classCount
 
             
