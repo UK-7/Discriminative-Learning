@@ -112,9 +112,10 @@ def computeBernoulliParameters(data, p):
                   likelihood[1] += data[i,:-1]
                   total_words[1] += p[i]
                   no_of_samples[1] += 1
-            likelihood[0] /= total_words[0]
-            likelihood[1] /= total_words[0]
-            prior = np.asarray(no_of_samples)/len(data)
+      likelihood[0] /= total_words[0]
+      likelihood[1] /= total_words[1]
+      print likelihood
+      prior = np.asarray(no_of_samples)/len(data)
       return likelihood, prior
 
 '''
@@ -134,26 +135,25 @@ def classifyBernoulli(data):
       f_measure = 0
       accuracy = 0
       
-      print p
       for train, test in kf:
-            likelihood, prior = computeBernoulliParameters(data, p)
+            likelihood, prior = computeBernoulliParameters(data[train], p)
             y_hat = []
             y = []
             membership = [0,0]
             for i in test:
-                  p = np.sum(data[i,:-1])
+                  p_i = np.sum(data[i,:-1])
                   for _class in [0,1]:
                         g_x = 0
                         for j in range(len(likelihood[_class,:])):
-                              g_x += comb(p, data[i,j]) * \
+                              g_x += comb(p_i, data[i,j]) * \
                                     m.pow(likelihood[_class, j], data[i,j]) * \
-                                    m.pow((1 - likelihood[_class, j]), (p - data[i,j]))
+                                    m.pow((1 - likelihood[_class, j]), (p_i - data[i,j]))
                         g_x += m.log(prior[_class])
                         membership[_class] = g_x
                   y_hat.append(membership.index(max(membership)))
                   y.append(data[i, -1])
-                  p,r,f,a = tools.createConfusion(y_hat, y, [0,1])
-            precision += p
+                  pr,r,f,a = tools.createConfusion(y_hat, y, [0,1])
+            precision += pr
             recall += r
             f_measure += f
             accuracy += a
@@ -181,5 +181,4 @@ if __name__ == "__main__":
       classifyBinomial(data)
       data = readTextData("train-features-400.txt", "train-labels-400.txt", binomial=False)
       classifyBernoulli(data)
-#      computeBinomialParameters(data, label)
 
